@@ -1,0 +1,10 @@
+node_modules
+# Keep environment variables out of version control
+.env
+/node_modules/
+/uploads/
+
+# /flashcard-70248-firebase-adminsdk-fbsvc-9edad52d07.json ntah baa iko dak jaleh bjir
+echo "flashcard-70248-firebase-adminsdk-fbsvc-9edad52d07.json"
+
+flashcard-70248-firebase-adminsdk-fbsvc-9edad52d07.json
