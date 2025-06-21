@@ -12,7 +12,7 @@ router.post('/user-status', authMiddleware, handleUserStatus);
 router.post('/createDeck', authMiddleware, createDeck); // Hanya pengguna yang login yang bisa membuat deck
 router.get('/getAllDeck', authMiddleware, getDecks); // Hanya pengguna yang login yang bisa membuat deck
 router.put('/editDeck/:id', authMiddleware, updateDeck); // Hanya pengguna yang login yang bisa membuat deck
-router.delete('/hapusDeck/:id', authMiddleware, deleteDeck);
+router.delete('/hapusDeck/:id', authMiddleware, deleteDeck); //tes donk
 
 
 
