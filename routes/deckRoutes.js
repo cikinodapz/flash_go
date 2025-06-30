@@ -1,6 +1,6 @@
 
 const express = require('express');
-const { createDeck,getDecks,updateDeck,deleteDeck, getProfile, saveFcmToken, handleUserStatus } = require('../controllers/deckController/deck');
+const { createDeck,getDecks,updateDeck,deleteDeck, getProfile, saveFcmToken, handleUserStatus, toggleFavoriteDeck, getFavoriteDecks } = require('../controllers/deckController/deck');
 const authMiddleware = require('../middlewares/auth.middleware'); // Middleware untuk verifikasi token
 
 const router = express.Router();
@@ -14,6 +14,7 @@ router.get('/getAllDeck', authMiddleware, getDecks); // Hanya pengguna yang logi
 router.put('/editDeck/:id', authMiddleware, updateDeck); // Hanya pengguna yang login yang bisa membuat deck
 router.delete('/hapusDeck/:id', authMiddleware, deleteDeck); //tes donk
 
-
+router.patch('/toggleFavorite/:id', authMiddleware, toggleFavoriteDeck);
+router.get('/favorites', authMiddleware, getFavoriteDecks);
 
 module.exports = router;
