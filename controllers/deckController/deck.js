@@ -166,6 +166,7 @@ const getDecks = async (req, res) => {
         name: true,
         category: true,
         createdAt: true,
+        isFavorite:true,
         flashcards: {
           select: {
             id: true,
@@ -194,6 +195,7 @@ const getDecks = async (req, res) => {
         name: deck.name,
         category: deck.category,
         createdAt: deck.createdAt,
+        isFavorite: deck.isFavorite,
         flashcardCount: totalFlashcards,
         mastered: masteredFlashcards,
         percentage, // Persentase penyelesaian
@@ -321,4 +323,103 @@ const deleteDeck = async (req, res) => {
   }
 };
 
-module.exports = { getProfile,saveFcmToken,handleUserStatus, getDecks, createDeck, updateDeck, deleteDeck };
+const toggleFavoriteDeck = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    // Cek apakah deck milik user
+    const deck = await prisma.deck.findUnique({
+      where: { id },
+    });
+
+    if (!deck || deck.userId !== userId) {
+      return res
+        .status(404)
+        .json({ message: "Deck tidak ditemukan atau bukan milik Anda" });
+    }
+
+    // Toggle status favorite
+    const updatedDeck = await prisma.deck.update({
+      where: { id },
+      data: { 
+        isFavorite: !deck.isFavorite,
+        updatedAt: new Date() 
+      },
+    });
+
+    res.status(200).json({ 
+      message: `Deck berhasil di${updatedDeck.isFavorite ? 'favoritkan' : 'hapus dari favorit'}`,
+      deck: updatedDeck 
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
+};
+
+const getFavoriteDecks = async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    const favoriteDecks = await prisma.deck.findMany({
+      where: { 
+        userId,
+        isFavorite: true 
+      },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        createdAt: true,
+        isFavorite: true,
+        flashcards: {
+          select: {
+            id: true,
+            progress: {
+              where: { userId, status: "MASTERED" },
+              select: { id: true },
+            },
+          },
+        },
+      },
+      orderBy: {
+        updatedAt: 'desc'
+      }
+    });
+
+    // Transformasi data untuk menyertakan progress
+    const decksWithProgress = favoriteDecks.map((deck) => {
+      const totalFlashcards = deck.flashcards.length;
+      const masteredFlashcards = deck.flashcards.filter(
+        (flashcard) => flashcard.progress.length > 0
+      ).length;
+      const percentage =
+        totalFlashcards > 0
+          ? Math.round((masteredFlashcards / totalFlashcards) * 100)
+          : 0;
+
+      return {
+        id: deck.id,
+        name: deck.name,
+        category: deck.category,
+        createdAt: deck.createdAt,
+        isFavorite: deck.isFavorite,
+        flashcardCount: totalFlashcards,
+        mastered: masteredFlashcards,
+        percentage,
+        flashcards: deck.flashcards.map(flashcard => ({
+          id: flashcard.id,
+          // Include other flashcard fields if needed
+        })),
+      };
+    });
+
+    res.status(200).json(decksWithProgress);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Terjadi kesalahan server" });
+  }
+};
+
+module.exports = { getProfile,saveFcmToken,handleUserStatus, getDecks, createDeck, updateDeck, deleteDeck,toggleFavoriteDeck,getFavoriteDecks };

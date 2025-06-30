@@ -37,7 +37,8 @@ model Deck {
   flashcards Flashcard[]
   createdAt  DateTime    @default(now())
   updatedAt  DateTime    @updatedAt
-
+  isFavorite Boolean     @default(false) // Tambahkan field ini
+  
   History History[]
 }
 
